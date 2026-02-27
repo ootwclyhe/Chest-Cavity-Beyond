@@ -78,6 +78,24 @@ Chest Cavity Beyond 是一个独立的扩展模组，为游戏添加了丰富的
 - **腐肉** - 由腐烂器官合成
 - **骨粉** - 由脊柱和肋骨制作
 
+
+## 版本迁移（Forge 1.7.10）
+
+仓库新增了 1.7.10 迁移审计、路线文档与 legacy 子工程：
+
+- `docs/MIGRATE_TO_FORGE_1_7_10.md`
+- `docs/legacy_1_7_10_audit.md`
+- `tools/audit_legacy_compat.py`
+- `legacy-1.7.10/`（Forge 1.7.10 迁移代码骨架）
+
+可先运行：
+
+```bash
+python3 tools/audit_legacy_compat.py
+```
+
+该脚本会重新生成兼容性审计报告，便于逐模块推进迁移。
+
 ## 美术资源署名
 
 本模组的美术资源使用了来自 [Chest Cavity](https://github.com/Tigereye504/chestcavity) 项目的素材，该项目采用 Apache License 2.0 开源协议。
