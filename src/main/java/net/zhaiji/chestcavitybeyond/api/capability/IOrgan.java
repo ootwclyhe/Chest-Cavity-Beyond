@@ -12,6 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.zhaiji.chestcavitybeyond.api.ChestCavitySlotContext;
 import net.zhaiji.chestcavitybeyond.api.TooltipsKeyContext;
 import net.zhaiji.chestcavitybeyond.attachment.ChestCavityData;
@@ -113,6 +114,15 @@ public interface IOrgan {
     }
 
     /**
+     * 器官拥有者受到伤害前
+     *
+     * @param context 胸腔槽位上下文
+     * @param event   伤害事件
+     */
+    default void incomingDamage(ChestCavitySlotContext context, LivingIncomingDamageEvent event) {
+    }
+
+    /**
      * 器官拥有者攻击
      *
      * @param context         胸腔槽位上下文
@@ -131,5 +141,30 @@ public interface IOrgan {
      * @param damageContainer 伤害容器
      */
     default void hurt(ChestCavitySlotContext context, DamageSource source, DamageContainer damageContainer) {
+    }
+
+    /**
+     * 获取器官技能冷却时间（tick）
+     *
+     * @return 冷却时间（tick），0 表示无冷却
+     */
+    default int getCooldownTicks() {
+        return 0;
+    }
+
+    /**
+     * 胸腔界面打开时调用
+     *
+     * @param context 胸腔槽位上下文
+     */
+    default void chestCavityOpen(ChestCavitySlotContext context) {
+    }
+
+    /**
+     * 胸腔界面关闭时调用
+     *
+     * @param context 胸腔槽位上下文
+     */
+    default void chestCavityClose(ChestCavitySlotContext context) {
     }
 }

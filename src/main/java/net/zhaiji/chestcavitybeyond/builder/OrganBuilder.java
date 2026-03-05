@@ -11,6 +11,7 @@ import net.zhaiji.chestcavitybeyond.api.capability.IOrgan;
 import net.zhaiji.chestcavitybeyond.api.capability.Organ;
 import net.zhaiji.chestcavitybeyond.api.function.AttackConsumer;
 import net.zhaiji.chestcavitybeyond.api.function.HurtConsumer;
+import net.zhaiji.chestcavitybeyond.api.function.IncomingDamageConsumer;
 import net.zhaiji.chestcavitybeyond.api.function.OrganTooltipConsumer;
 import net.zhaiji.chestcavitybeyond.util.TooltipUtil;
 
@@ -37,7 +38,12 @@ public class OrganBuilder {
     };
     private static final HurtConsumer EMPTY_HURT = (context, source, damageContainer) -> {
     };
-
+    private static final IncomingDamageConsumer EMPTY_INCOMING_DAMAGE = (context, event) -> {
+    };
+    private static final Consumer<ChestCavitySlotContext> EMPTY_CHEST_CAVITY_OPEN = context -> {
+    };
+    private static final Consumer<ChestCavitySlotContext> EMPTY_CHEST_CAVITY_CLOSE = context -> {
+    };
     /**
      * 新建构建器
      *
@@ -63,8 +69,12 @@ public class OrganBuilder {
         private Consumer<ChestCavitySlotContext> organRemovedConsumer = EMPTY_CONSUMER;
         private boolean hasSkill = false;
         private Consumer<ChestCavitySlotContext> organSkillConsumer = EMPTY_CONSUMER;
+        private int cooldownTicks = 0;
         private AttackConsumer attackConsumer = EMPTY_ATTACK;
         private HurtConsumer hurtConsumer = EMPTY_HURT;
+        private IncomingDamageConsumer incomingDamageConsumer = EMPTY_INCOMING_DAMAGE;
+        private Consumer<ChestCavitySlotContext> chestCavityOpenConsumer = EMPTY_CHEST_CAVITY_OPEN;
+        private Consumer<ChestCavitySlotContext> chestCavityCloseConsumer = EMPTY_CHEST_CAVITY_CLOSE;
 
         private Builder() {
         }
@@ -147,6 +157,14 @@ public class OrganBuilder {
         }
 
         /**
+         * 设置器官技能冷却时间（tick）
+         */
+        public Builder cooldown(int cooldownTicks) {
+            this.cooldownTicks = cooldownTicks;
+            return this;
+        }
+
+        /**
          * 设置器官拥有者攻击触发器
          */
         public Builder attack(AttackConsumer attackConsumer) {
@@ -159,6 +177,30 @@ public class OrganBuilder {
          */
         public Builder hurt(HurtConsumer hurtConsumer) {
             this.hurtConsumer = hurtConsumer;
+            return this;
+        }
+
+        /**
+         * 设置器官拥有者受到伤害前触发器
+         */
+        public Builder incomingDamage(IncomingDamageConsumer incomingDamageConsumer) {
+            this.incomingDamageConsumer = incomingDamageConsumer;
+            return this;
+        }
+
+        /**
+         * 设置胸腔打开触发器
+         */
+        public Builder chestCavityOpen(Consumer<ChestCavitySlotContext> chestCavityOpenConsumer) {
+            this.chestCavityOpenConsumer = chestCavityOpenConsumer;
+            return this;
+        }
+
+        /**
+         * 设置胸腔关闭触发器
+         */
+        public Builder chestCavityClose(Consumer<ChestCavitySlotContext> chestCavityCloseConsumer) {
+            this.chestCavityCloseConsumer = chestCavityCloseConsumer;
             return this;
         }
 
@@ -181,8 +223,12 @@ public class OrganBuilder {
                             organRemovedConsumer,
                             hasSkill,
                             organSkillConsumer,
+                            cooldownTicks,
                             attackConsumer,
-                            hurtConsumer
+                            hurtConsumer,
+                            incomingDamageConsumer,
+                            chestCavityOpenConsumer,
+                            chestCavityCloseConsumer
                     )
             );
             return item;

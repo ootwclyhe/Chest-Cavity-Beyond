@@ -50,9 +50,9 @@ public class CommonEventHandler {
      * @param event 注册capability事件
      */
     public static void handlerRegisterCapabilitiesEvent(RegisterCapabilitiesEvent event) {
-        OrganBuilder.ORGAN_REGISTRY.forEach(((item, organ) -> {
+        OrganBuilder.ORGAN_REGISTRY.forEach((item, organ) -> {
             event.registerItem(CapabilityManager.ORGAN, (itemStack, context) -> organ, item);
-        }));
+        });
     }
 
     /**
@@ -269,12 +269,16 @@ public class CommonEventHandler {
      * @param event 实体即将受伤事件
      */
     public static void handlerLivingIncomingDamageEvent(LivingIncomingDamageEvent event) {
+        LivingEntity entity = event.getEntity();
+        ChestCavityData data = ChestCavityUtil.getData(entity);
+        // 触发所有器官的incomingDamage效果
+        ChestCavityUtil.incomingDamage(data, entity, event);
+        // 检查事件是否已被取消
+        if (event.isCanceled()) return;
         DamageSource source = event.getSource();
         boolean isProjectile = source.is(DamageTypeTags.IS_PROJECTILE);
         boolean isWaterPotion = source.getDirectEntity() instanceof ThrownPotion potion && potion.getItem().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.WATER);
-        LivingEntity entity = event.getEntity();
         if (isProjectile || isWaterPotion) {
-            ChestCavityData data = ChestCavityUtil.getData(entity);
             double ender = data.getCurrentValue(InitAttribute.ENDER);
             if (data.getCurrentValue(InitAttribute.PROJECTILE_DODGE) > 0 && ender > 0) {
                 OrganSkillUtil.randomTeleport(entity, ender);
@@ -338,34 +342,10 @@ public class CommonEventHandler {
         // 触发所有器官的attack效果
         if (source.getDirectEntity() instanceof LivingEntity sourceEntity) {
             ChestCavityData sourceData = ChestCavityUtil.getData(sourceEntity);
-            for (int i = 0; i < 27; i++) {
-                ItemStack organ = sourceData.getStackInSlot(i);
-                ChestCavityUtil.getOrganCap(organ).attack(
-                        ChestCavityUtil.createContext(
-                                sourceData,
-                                sourceEntity,
-                                i,
-                                organ
-                        ),
-                        entity,
-                        source,
-                        event.getContainer()
-                );
-            }
+            ChestCavityUtil.attack(sourceData, sourceEntity, entity, source, event.getContainer());
         }
-        for (int i = 0; i < 27; i++) {
-            ItemStack organ = data.getStackInSlot(i);
-            ChestCavityUtil.getOrganCap(organ).hurt(
-                    ChestCavityUtil.createContext(
-                            data,
-                            entity,
-                            i,
-                            organ
-                    ),
-                    source,
-                    event.getContainer()
-            );
-        }
+        // 触发所有器官的hurt效果
+        ChestCavityUtil.hurt(data, entity, source, event.getContainer());
     }
 
     /**
