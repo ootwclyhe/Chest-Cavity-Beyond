@@ -2,6 +2,22 @@
 
 本文档记录了 Chest Cavity Beyond 所有版本的更改。
 
+## 1.0.8
+
+- 新增了 `OrganChangeEvent` 事件，当胸腔中的器官被添加、移除或替换时触发
+- 新增了 `chestCavityOpen` 和 `chestCavityClose` 器官回调方法，在胸腔界面打开/关闭时触发
+- 重构了 `incomingDamage` 器官方法，现在使用 `LivingIncomingDamageEvent` 事件代替 `DamageSource` 和 `DamageContainer`
+
+## 1.0.7
+
+- 新增了 `incomingDamage` 器官方法，在 `LivingIncomingDamageEvent` 事件中触发
+- 优化了器官技能冷却系统，通过 `cooldown()` 方法统一设置冷却时间
+
+## 1.0.6
+
+- 新增了 OwnableEntity 所有者开胸功能，玩家可以直接打开自己驯服的实体的胸腔（如狼、猫等）
+- 修改了 SAFE_SURGERY 附魔，使其也影响已驯服的实体开胸
+
 ## 1.0.5
 
 - 新增了胸腔类型默认属性加成功能

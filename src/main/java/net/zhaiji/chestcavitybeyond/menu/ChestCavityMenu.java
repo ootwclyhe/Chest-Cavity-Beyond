@@ -40,6 +40,8 @@ public class ChestCavityMenu extends AbstractContainerMenu {
         for (int i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
         }
+        // 触发胸腔打开回调
+        ChestCavityUtil.chestCavityOpen(data, entity);
     }
 
     @Override
@@ -51,6 +53,8 @@ public class ChestCavityMenu extends AbstractContainerMenu {
                 player.playNotifySound(SoundEvents.CHEST_CLOSE, player.getSoundSource(), 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
             }
         }
+        // 触发胸腔关闭回调
+        ChestCavityUtil.chestCavityClose(data, data.getOwner());
     }
 
     @Override
