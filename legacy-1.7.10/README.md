@@ -14,6 +14,7 @@
 - selectedSlot 服务端校验与回写同步
 - 客户端提示包（`ChestOpenerMessagePacket` / `UnopenableChestCavityMessagePacket`）
 - 客户端槽位同步包（`SyncSelectedSlotClientPacket`）
+- 客户端渲染任务包（`AddGuardianLaserRenderTaskPacket`）
 - 胸腔 UI 骨架：`LegacyGuiHandler` + `ContainerChestCavityLegacy` + `GuiChestCavityLegacy`
 - 示例物品注册与交互入口（`Chest Opener` 右键可打开自身/目标生物胸腔界面）
 - 示例器官系统（`LegacyOrganRegistry` + `LegacyOrganTickHandler` + `organ_basic_heart` + `organ_basic_lung`）

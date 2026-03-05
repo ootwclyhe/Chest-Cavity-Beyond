@@ -41,6 +41,7 @@
 - 服务端技能包：`UseSkillPacket`、`SyncSelectedSlotPacket`（旧版 `IMessage`）
 - `selectedSlot` 回写同步：服务端校验并回发 `SyncChestCavityPacket`
 - 客户端提示包：`ChestOpenerMessagePacket`、`UnopenableChestCavityMessagePacket`
+- 客户端渲染任务包：`AddGuardianLaserRenderTaskPacket`（守卫者激光任务同步）
 - 客户端槽位同步包：`SyncSelectedSlotClientPacket`（维护本地 selectedSlot 状态）
 
 ### 5) 内容注册迁移（推进中）
@@ -64,6 +65,7 @@
 - `BasicLungOrgan`：示例肺器官（周期性提供水下呼吸）
 - `LegacySkillUtil`：器官主动技能触发入口（配合服务端技能包，支持 selectedSlot 兜底触发）
 - `LegacyClientState`：客户端选中槽位状态缓存
+- `LegacyRenderTaskState`：客户端渲染任务状态缓存
 
 ### 8) 手术与掉落链路（基础完成）
 
