@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.zhaiji.chestcavitybeyond.legacy.chestcavity.ChestCavityProperties;
+import net.zhaiji.chestcavitybeyond.legacy.client.state.LegacyClientState;
 
 public class SyncChestCavityPacket implements IMessage {
     private int entityId;
@@ -48,6 +49,9 @@ public class SyncChestCavityPacket implements IMessage {
                 ChestCavityProperties props = ChestCavityProperties.get((EntityLivingBase) entity);
                 if (props != null && message.data != null) {
                     props.getData().fromNbt(message.data);
+                    if (entity == mc.thePlayer) {
+                        LegacyClientState.selectedSlot = props.getData().selectedSlot;
+                    }
                 }
             }
             return null;

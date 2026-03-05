@@ -31,12 +31,17 @@
 - 胸腔数据结构：`ChestCavityData`（3×9 槽位 + NBT 序列化）
 - 实体挂载方式：`ChestCavityProperties implements IExtendedEntityProperties`
 - 生命周期注册：`EntityLifecycleHandler`（EntityConstructing / Player clone）
+- 初始器官注入：`LegacyChestCavityInitHandler`（生物首次进入世界注入默认器官）
 
 ### 4) 网络迁移（基础完成）
 
 - 通道：`SimpleNetworkWrapper`
 - 包示例：`SyncChestCavityPacket`（ByteBufUtils + NBT 同步）
 - 实体同步触发：`ChestCavitySyncHandler`（登录/跟踪事件 + 周边广播）
+- 服务端技能包：`UseSkillPacket`、`SyncSelectedSlotPacket`（旧版 `IMessage`）
+- `selectedSlot` 回写同步：服务端校验并回发 `SyncChestCavityPacket`
+- 客户端提示包：`ChestOpenerMessagePacket`、`UnopenableChestCavityMessagePacket`
+- 客户端槽位同步包：`SyncSelectedSlotClientPacket`（维护本地 selectedSlot 状态）
 
 ### 5) 内容注册迁移（推进中）
 
@@ -57,11 +62,13 @@
 - `SlotOrganLegacy`：胸腔槽位仅允许已注册器官物品
 - `BasicHeartOrgan`：示例心脏器官（周期性治疗）
 - `BasicLungOrgan`：示例肺器官（周期性提供水下呼吸）
+- `LegacySkillUtil`：器官主动技能触发入口（配合服务端技能包，支持 selectedSlot 兜底触发）
+- `LegacyClientState`：客户端选中槽位状态缓存
 
 ### 8) 手术与掉落链路（基础完成）
 
-- `ItemChestOpenerLegacy`：对生物潜行右键可执行基础器官提取
-- `LegacySurgeryHelper`：从胸腔槽位提取/降级生成器官并给予玩家
+- `ItemChestOpenerLegacy`：对生物潜行右键可执行基础器官提取（含耐久消耗）
+- `LegacySurgeryHelper`：实现成功率判定、条件校验、玩家/目标双冷却、附魔加成、失败惩罚、器官损坏概率与稀有器官逻辑
 - `LegacyOrganDropHandler`：生物死亡时掉落胸腔内器官
 - `ModRecipes`：补齐开胸器基础合成配方
 
@@ -69,7 +76,7 @@
 
 1. 器官系统：把现有大批器官行为（属性/技能触发）逐项回写到 legacy 运行时。
 2. 技能与任务网络包：按旧版 `IMessage` 逐包迁移。
-3. 手术细则：加入成功率、工具耐久、附魔/条件判定等完整规则。
+3. 手术细则：继续补齐更细的附魔映射与高级器官专属规则（基础损坏概率/稀有器官逻辑已落地）。
 4. 客户端渲染任务：替换现代渲染入口与特效。
 5. 联机压力测试：多人同步一致性与边界行为。
 

@@ -7,4 +7,6 @@ public interface ILegacyOrgan {
     String getId();
 
     void onTick(EntityLivingBase entity, ItemStack stack, int slotIndex);
+
+    void onUse(EntityLivingBase entity, ItemStack stack, int slotIndex);
 }

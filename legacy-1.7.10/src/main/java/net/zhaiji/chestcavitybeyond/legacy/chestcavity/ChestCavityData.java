@@ -5,6 +5,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
 public class ChestCavityData {
+    public int selectedSlot = -1;
     public static final int ROWS = 3;
     public static final int COLS = 9;
     public static final int SLOT_COUNT = ROWS * COLS;
@@ -38,6 +39,7 @@ public class ChestCavityData {
             }
         }
         root.setTag("Organs", organList);
+        root.setInteger("SelectedSlot", selectedSlot);
         return root;
     }
 
@@ -45,6 +47,8 @@ public class ChestCavityData {
         for (int i = 0; i < SLOT_COUNT; i++) {
             organs[i] = null;
         }
+
+        selectedSlot = root.hasKey("SelectedSlot") ? root.getInteger("SelectedSlot") : -1;
 
         NBTTagList organList = root.getTagList("Organs", 10);
         for (int i = 0; i < organList.tagCount(); i++) {

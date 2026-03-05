@@ -16,4 +16,9 @@ public class BasicHeartOrgan implements ILegacyOrgan {
             entity.heal(0.5F);
         }
     }
+    @Override
+    public void onUse(EntityLivingBase entity, ItemStack stack, int slotIndex) {
+        onTick(entity, stack, slotIndex);
+    }
+
 }

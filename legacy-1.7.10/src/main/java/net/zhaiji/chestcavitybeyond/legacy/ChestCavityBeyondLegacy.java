@@ -8,6 +8,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.zhaiji.chestcavitybeyond.legacy.handler.EntityLifecycleHandler;
 import net.zhaiji.chestcavitybeyond.legacy.handler.chest.ChestCavitySyncHandler;
+import net.zhaiji.chestcavitybeyond.legacy.handler.chest.LegacyChestCavityInitHandler;
 import net.zhaiji.chestcavitybeyond.legacy.handler.chest.LegacyOrganDropHandler;
 import net.zhaiji.chestcavitybeyond.legacy.handler.chest.LegacyOrganTickHandler;
 import net.zhaiji.chestcavitybeyond.legacy.handler.gui.LegacyGuiHandler;
@@ -34,6 +35,7 @@ public class ChestCavityBeyondLegacy {
         LegacyNetwork.init();
         EntityLifecycleHandler.register();
         ChestCavitySyncHandler.register();
+        LegacyChestCavityInitHandler.register();
         LegacyOrganTickHandler.register();
         LegacyOrganDropHandler.register();
         NetworkRegistry.INSTANCE.registerGuiHandler(INSTANCE, new LegacyGuiHandler());

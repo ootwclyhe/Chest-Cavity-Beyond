@@ -16,6 +16,7 @@ public class ItemChestOpenerLegacy extends Item {
         setTextureName("chestcavitybeyond:chest_opener");
         setCreativeTab(CreativeTabs.tabTools);
         setMaxStackSize(1);
+        setMaxDamage(128);
     }
 
     @Override
@@ -30,7 +31,7 @@ public class ItemChestOpenerLegacy extends Item {
     public boolean itemInteractionForEntity(ItemStack stack, EntityPlayer player, EntityLivingBase target) {
         if (!player.worldObj.isRemote) {
             if (player.isSneaking()) {
-                return LegacySurgeryHelper.tryExtractOrgan(player, target);
+                return LegacySurgeryHelper.tryExtractOrgan(player, target, stack);
             }
             player.openGui(ChestCavityBeyondLegacy.INSTANCE, LegacyGuiHandler.CHEST_CAVITY_GUI, player.worldObj, target.getEntityId(), 0, 0);
         }

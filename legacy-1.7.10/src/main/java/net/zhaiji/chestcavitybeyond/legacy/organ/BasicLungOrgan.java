@@ -18,4 +18,9 @@ public class BasicLungOrgan implements ILegacyOrgan {
             entity.addPotionEffect(new PotionEffect(Potion.waterBreathing.id, 60, 0));
         }
     }
+    @Override
+    public void onUse(EntityLivingBase entity, ItemStack stack, int slotIndex) {
+        onTick(entity, stack, slotIndex);
+    }
+
 }
