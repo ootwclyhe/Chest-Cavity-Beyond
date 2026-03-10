@@ -59,7 +59,7 @@ public class ChestOpenerItem extends Item {
         if (hitResult instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof LivingEntity target) {
             // 检查胸腔类型是否可开胸
             ChestCavityType cavityType = ChestCavityTypeManager.getType(target);
-            if (cavityType.isUnopenable()) {
+            if (cavityType.isUnopenable(player, target)) {
                 if (player instanceof ServerPlayer serverPlayer) {
                     PacketDistributor.sendToPlayer(serverPlayer, new UnopenableChestCavityMessagePacket(target.getId()));
                 }

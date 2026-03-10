@@ -4,7 +4,6 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -14,22 +13,25 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.zhaiji.chestcavitybeyond.api.AttributeEntry;
 import net.zhaiji.chestcavitybeyond.api.ChestCavitySlotContext;
 import net.zhaiji.chestcavitybeyond.api.TooltipsKeyContext;
 import net.zhaiji.chestcavitybeyond.api.function.AttackConsumer;
 import net.zhaiji.chestcavitybeyond.api.function.HurtConsumer;
 import net.zhaiji.chestcavitybeyond.api.function.IncomingDamageConsumer;
+import net.zhaiji.chestcavitybeyond.api.function.OrganModifierConsumer;
 import net.zhaiji.chestcavitybeyond.api.function.OrganTooltipConsumer;
 import net.zhaiji.chestcavitybeyond.attachment.ChestCavityData;
+import net.zhaiji.chestcavitybeyond.util.OrganAttributeUtil;
 import net.zhaiji.chestcavitybeyond.util.OrganSkillUtil;
 import net.zhaiji.chestcavitybeyond.util.TooltipUtil;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class Organ implements IOrgan {
-    private final BiConsumer<ResourceLocation, Multimap<Holder<Attribute>, AttributeModifier>> organModifierConsumer;
+    private final List<AttributeEntry> attributeEntries;
+    private final OrganModifierConsumer organModifierConsumer;
     private final OrganTooltipConsumer descriptionTooltipConsumer;
     private final OrganTooltipConsumer attributeTooltipConsumer;
     private final OrganTooltipConsumer skillTooltipConsumer;
@@ -45,7 +47,25 @@ public class Organ implements IOrgan {
     private final Consumer<ChestCavitySlotContext> chestCavityOpenConsumer;
     private final Consumer<ChestCavitySlotContext> chestCavityCloseConsumer;
 
-    public Organ(BiConsumer<ResourceLocation, Multimap<Holder<Attribute>, AttributeModifier>> organModifierConsumer, OrganTooltipConsumer descriptionTooltipConsumer, OrganTooltipConsumer attributeTooltipConsumer, OrganTooltipConsumer skillTooltipConsumer, Consumer<ChestCavitySlotContext> organTickConsumer, Consumer<ChestCavitySlotContext> organAddedConsumer, Consumer<ChestCavitySlotContext> organRemovedConsumer, boolean hasSkill, Consumer<ChestCavitySlotContext> organSkillConsumer, int cooldownTicks, AttackConsumer attackConsumer, HurtConsumer hurtConsumer, IncomingDamageConsumer incomingDamageConsumer, Consumer<ChestCavitySlotContext> chestCavityOpenConsumer, Consumer<ChestCavitySlotContext> chestCavityCloseConsumer) {
+    public Organ(
+        List<AttributeEntry> attributeEntries,
+        OrganModifierConsumer organModifierConsumer,
+        OrganTooltipConsumer descriptionTooltipConsumer,
+        OrganTooltipConsumer attributeTooltipConsumer,
+        OrganTooltipConsumer skillTooltipConsumer,
+        Consumer<ChestCavitySlotContext> organTickConsumer,
+        Consumer<ChestCavitySlotContext> organAddedConsumer,
+        Consumer<ChestCavitySlotContext> organRemovedConsumer,
+        boolean hasSkill,
+        Consumer<ChestCavitySlotContext> organSkillConsumer,
+        int cooldownTicks,
+        AttackConsumer attackConsumer,
+        HurtConsumer hurtConsumer,
+        IncomingDamageConsumer incomingDamageConsumer,
+        Consumer<ChestCavitySlotContext> chestCavityOpenConsumer,
+        Consumer<ChestCavitySlotContext> chestCavityCloseConsumer
+    ) {
+        this.attributeEntries = attributeEntries;
         this.organModifierConsumer = organModifierConsumer;
         this.descriptionTooltipConsumer = descriptionTooltipConsumer;
         this.attributeTooltipConsumer = attributeTooltipConsumer;
@@ -66,17 +86,43 @@ public class Organ implements IOrgan {
     @Override
     public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(ChestCavitySlotContext context) {
         Multimap<Holder<Attribute>, AttributeModifier> modifiers = LinkedHashMultimap.create();
-        organModifierConsumer.accept(context.id(), modifiers);
+        for (AttributeEntry entry : attributeEntries) {
+            AttributeModifier modifier = OrganAttributeUtil.createModifier(context.id(), entry.value(), entry.operation());
+            modifiers.put(entry.attribute(), modifier);
+        }
+        if (context.data() == null || context.entity() == null) {
+            organModifierConsumer.accept(context, modifiers);
+        }
+//        // 防止在 ChestCavityType.builder() 构建时因 context.data() 为 null 而抛出异常
+//        try {
+//            organModifierConsumer.accept(context, modifiers);
+//        } catch (NullPointerException e) {
+//            // 静默忽略，因为构建时可能没有实体数据
+//        }
         return modifiers;
     }
 
     @Override
-    public void descriptionTooltip(ChestCavityData data, ItemStack stack, TooltipsKeyContext keyContext, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void descriptionTooltip(
+        ChestCavityData data,
+        ItemStack stack,
+        TooltipsKeyContext keyContext,
+        Item.TooltipContext context,
+        List<Component> tooltipComponents,
+        TooltipFlag tooltipFlag
+    ) {
         descriptionTooltipConsumer.accept(data, stack, keyContext, context, tooltipComponents, tooltipFlag);
     }
 
     @Override
-    public void attributeTooltip(ChestCavityData data, ItemStack stack, TooltipsKeyContext keyContext, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void attributeTooltip(
+        ChestCavityData data,
+        ItemStack stack,
+        TooltipsKeyContext keyContext,
+        Item.TooltipContext context,
+        List<Component> tooltipComponents,
+        TooltipFlag tooltipFlag
+    ) {
         OrganTooltipConsumer consumer = attributeTooltipConsumer;
         if (consumer == null) {
             consumer = TooltipUtil.DEFAULT_ATTRIBUTE_TOOLTIP;
@@ -85,7 +131,14 @@ public class Organ implements IOrgan {
     }
 
     @Override
-    public void skillTooltip(ChestCavityData data, ItemStack stack, TooltipsKeyContext keyContext, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void skillTooltip(
+        ChestCavityData data,
+        ItemStack stack,
+        TooltipsKeyContext keyContext,
+        Item.TooltipContext context,
+        List<Component> tooltipComponents,
+        TooltipFlag tooltipFlag
+    ) {
         skillTooltipConsumer.accept(data, stack, keyContext, context, tooltipComponents, tooltipFlag);
     }
 

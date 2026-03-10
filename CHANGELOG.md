@@ -2,6 +2,12 @@
 
 本文档记录了 Chest Cavity Beyond 所有版本的更改。
 
+## 1.1.1
+
+- 新增类型安全的器官属性修饰符 API（`addValueAttribute`、`baseMultipliedAttribute`、`totalMultipliedAttribute`）
+- 重构了器官定义系统，简化了 `OrganBuilder` 使用方式
+- 新增 `AttributeEntry` 和 `OrganModifierConsumer` 接口
+
 ## 1.1.0
 
 - 完善了可序列化任务系统，新增 `ChestCavityData` 参数，反序列化时可以访问胸腔数据上下文
