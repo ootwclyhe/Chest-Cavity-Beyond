@@ -151,7 +151,7 @@ public class ChestCavityData extends ItemStackHandler {
 
     public boolean hasOrgan(ItemStack stack) {
         for (ItemStack organ : stacks) {
-            if (!organ.isEmpty() && ItemStack.isSameItemSameComponents(organ, stack)) {
+            if (ItemStack.isSameItemSameComponents(organ, stack)) {
                 return true;
             }
         }
@@ -160,7 +160,7 @@ public class ChestCavityData extends ItemStackHandler {
 
     public boolean hasOrgan(TagKey<Item> tag) {
         for (ItemStack organ : stacks) {
-            if (!organ.isEmpty() && organ.is(tag)) {
+            if (organ.is(tag)) {
                 return true;
             }
         }
@@ -174,6 +174,49 @@ public class ChestCavityData extends ItemStackHandler {
             }
         }
         return false;
+    }
+
+    /**
+     * 获得同类器官在胸腔内的数量
+     */
+    public int getOrganCount(Item item) {
+        int count = 0;
+        for (ItemStack organ : stacks) {
+            if (organ.is(item)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int getOrganCount(ItemStack stack) {
+        int count = 0;
+        for (ItemStack organ : stacks) {
+            if (ItemStack.isSameItemSameComponents(organ, stack)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int getOrganCount(TagKey<Item> tag) {
+        int count = 0;
+        for (ItemStack organ : stacks) {
+            if (organ.is(tag)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int getOrganCount(Predicate<ItemStack> predicate) {
+        int count = 0;
+        for (ItemStack organ : stacks) {
+            if (predicate.test(organ)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**

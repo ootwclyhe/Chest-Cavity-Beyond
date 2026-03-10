@@ -23,6 +23,7 @@ import net.zhaiji.chestcavitybeyond.api.event.OrganChangeEvent;
 import net.zhaiji.chestcavitybeyond.attachment.ChestCavityData;
 import net.zhaiji.chestcavitybeyond.builder.OrganBuilder;
 import net.zhaiji.chestcavitybeyond.manager.CapabilityManager;
+import net.zhaiji.chestcavitybeyond.manager.ItemTagManager;
 import net.zhaiji.chestcavitybeyond.menu.ChestCavityMenu;
 import net.zhaiji.chestcavitybeyond.mixinapi.IMobEffectInstance;
 import net.zhaiji.chestcavitybeyond.register.InitAttachmentType;
@@ -65,6 +66,17 @@ public class ChestCavityUtil {
     }
 
     /**
+     * 检测物品是否为器官
+     *
+     * @param stack 物品
+     * @return 是否为器官
+     */
+    public static boolean isOrgan(ItemStack stack) {
+        IOrgan organCap = getOrganCap(stack);
+        return stack.is(ItemTagManager.ORGANS) || organCap != OrganBuilder.EMPTY_ORGAN;
+    }
+
+    /**
      * 创建胸腔槽位上下文
      *
      * @param data   胸腔数据 (可能为null)
@@ -73,7 +85,12 @@ public class ChestCavityUtil {
      * @param stack  对应物品
      * @return 胸腔槽位上下文
      */
-    public static ChestCavitySlotContext createContext(@Nullable ChestCavityData data, @Nullable LivingEntity entity, int index, ItemStack stack) {
+    public static ChestCavitySlotContext createContext(
+        @Nullable ChestCavityData data,
+        @Nullable LivingEntity entity,
+        int index,
+        ItemStack stack
+    ) {
         return new ChestCavitySlotContext(data, entity, getSlotId(index), index, stack);
     }
 
@@ -171,7 +188,13 @@ public class ChestCavityUtil {
     /**
      * 遍历所有器官触发攻击回调
      */
-    public static void attack(ChestCavityData data, LivingEntity entity, LivingEntity target, DamageSource source, DamageContainer damageContainer) {
+    public static void attack(
+        ChestCavityData data,
+        LivingEntity entity,
+        LivingEntity target,
+        DamageSource source,
+        DamageContainer damageContainer
+    ) {
         for (int i = 0; i < data.getSlots(); i++) {
             ItemStack stack = data.getStackInSlot(i);
             if (!stack.isEmpty()) {
@@ -200,12 +223,12 @@ public class ChestCavityUtil {
      */
     public static void openChestCavity(Player player, LivingEntity entity) {
         player.openMenu(
-                new SimpleMenuProvider(
-                        (containerId, playerInventory, player1) ->
-                                new ChestCavityMenu(containerId, playerInventory, entity),
-                        entity.getName()
-                ),
-                (extraData) -> extraData.writeInt(entity.getId())
+            new SimpleMenuProvider(
+                (containerId, playerInventory, player1) ->
+                    new ChestCavityMenu(containerId, playerInventory, entity),
+                entity.getName()
+            ),
+            (extraData) -> extraData.writeInt(entity.getId())
         );
     }
 
