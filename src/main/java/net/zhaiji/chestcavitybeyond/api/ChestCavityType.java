@@ -40,7 +40,7 @@ public class ChestCavityType {
 
     private boolean needBreath = true;
 
-    private BiFunction<Player, LivingEntity, Boolean> unopenable = (player, entity) -> true;
+    private BiFunction<Player, LivingEntity, Boolean> canOpen = (player, entity) -> true;
 
     private String unopenableMessage;
 
@@ -110,7 +110,7 @@ public class ChestCavityType {
         attributeBonuses.putAll(copyTarget.attributeBonuses);
         typeDefaultBonuses.addAll(copyTarget.typeDefaultBonuses);
         this.needBreath = copyTarget.needBreath;
-        this.unopenable = copyTarget.unopenable;
+        this.canOpen = copyTarget.canOpen;
         this.unopenableMessage = copyTarget.unopenableMessage;
         return this;
     }
@@ -325,25 +325,25 @@ public class ChestCavityType {
     }
 
     /**
-     * 获取是否不可开胸
+     * 获取能否开胸
      */
-    public boolean isUnopenable(Player player, LivingEntity entity) {
-        return unopenable.apply(player, entity);
+    public boolean canOpen(Player player, LivingEntity entity) {
+        return canOpen.apply(player, entity);
     }
 
     /**
-     * 设置是否不可开胸
+     * 设置能否开胸
      */
-    public ChestCavityType setUnopenable(BiFunction<Player, LivingEntity, Boolean> unopenable) {
-        this.unopenable = unopenable;
+    public ChestCavityType setCanOpen(BiFunction<Player, LivingEntity, Boolean> unopenable) {
+        this.canOpen = unopenable;
         return this;
     }
 
     /**
-     * 设置是否不可开胸
+     * 设置能否开胸
      */
-    public ChestCavityType setUnopenable(boolean canOpen) {
-        this.unopenable = (player, entity) -> canOpen;
+    public ChestCavityType setCanOpen(boolean canOpen) {
+        this.canOpen = (player, entity) -> canOpen;
         return this;
     }
 

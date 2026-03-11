@@ -2,6 +2,11 @@
 
 本文档记录了 Chest Cavity Beyond 所有版本的更改。
 
+## 1.1.1_fix
+
+- 修复了默认不可开胸的bug（原 `unopenable` 默认返回 `true` 导致所有实体默认不可开胸）
+- API优化：`ChestCavityType` 的开胸判断方法从 `unopenable/isUnopenable/setUnopenable` 重命名为 `canOpen/canOpen/setCanOpen`，逻辑取反，命名更直观
+
 ## 1.1.1
 
 - 改进了胸腔类型的不可开胸判断机制，现在支持根据玩家和实体动态判断是否可开胸

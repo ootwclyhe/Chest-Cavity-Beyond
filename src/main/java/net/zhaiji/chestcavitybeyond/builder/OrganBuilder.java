@@ -24,10 +24,9 @@ import java.util.function.Consumer;
  * 器官工厂类
  */
 public class OrganBuilder {
-    public static final Map<Item, Organ> ORGAN_REGISTRY = new HashMap<>();
-
     public static final IOrgan EMPTY_ORGAN = new IOrgan() {
     };
+    private static final Map<Item, Organ> ORGAN_REGISTRY = new HashMap<>();
     private static final OrganModifierConsumer EMPTY_MODIFIER = (context, modifiers) -> {
     };
     private static final OrganTooltipConsumer EMPTY_TOOLTIP = (data, stack, keyContext, context, tooltipComponents, tooltipFlag) -> {
@@ -44,6 +43,16 @@ public class OrganBuilder {
     };
     private static final Consumer<ChestCavitySlotContext> EMPTY_CHEST_CAVITY_CLOSE = context -> {
     };
+
+    /**
+     * 获取器官注册表
+     *
+     * @return 器官注册表
+     */
+    public static Map<Item, Organ> getRegistry() {
+        return ORGAN_REGISTRY;
+    }
+
     /**
      * 新建构建器
      *
@@ -59,8 +68,8 @@ public class OrganBuilder {
 
     public static class Builder {
         private final Item.Properties properties = new Item.Properties().stacksTo(1);
-        private Item item;
         private final List<AttributeEntry> attributeEntries = new ArrayList<>();
+        private Item item;
         private OrganModifierConsumer organModifierConsumer = EMPTY_MODIFIER;
         private OrganTooltipConsumer descriptionTooltipConsumer = EMPTY_TOOLTIP;
         private OrganTooltipConsumer attributeTooltipConsumer = null;
@@ -259,25 +268,25 @@ public class OrganBuilder {
                 item = new Item(properties);
             }
             ORGAN_REGISTRY.put(
-                    item,
-                    new Organ(
-                            attributeEntries,
-                            organModifierConsumer,
-                            descriptionTooltipConsumer,
-                            attributeTooltipConsumer,
-                            skillTooltipConsumer,
-                            organTickConsumer,
-                            organAddedConsumer,
-                            organRemovedConsumer,
-                            hasSkill,
-                            organSkillConsumer,
-                            cooldownTicks,
-                            attackConsumer,
-                            hurtConsumer,
-                            incomingDamageConsumer,
-                            chestCavityOpenConsumer,
-                            chestCavityCloseConsumer
-                    )
+                item,
+                new Organ(
+                    attributeEntries,
+                    organModifierConsumer,
+                    descriptionTooltipConsumer,
+                    attributeTooltipConsumer,
+                    skillTooltipConsumer,
+                    organTickConsumer,
+                    organAddedConsumer,
+                    organRemovedConsumer,
+                    hasSkill,
+                    organSkillConsumer,
+                    cooldownTicks,
+                    attackConsumer,
+                    hurtConsumer,
+                    incomingDamageConsumer,
+                    chestCavityOpenConsumer,
+                    chestCavityCloseConsumer
+                )
             );
             return item;
         }

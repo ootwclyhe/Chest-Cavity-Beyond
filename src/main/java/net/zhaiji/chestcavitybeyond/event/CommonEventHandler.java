@@ -50,7 +50,7 @@ public class CommonEventHandler {
      * @param event 注册capability事件
      */
     public static void handlerRegisterCapabilitiesEvent(RegisterCapabilitiesEvent event) {
-        OrganBuilder.ORGAN_REGISTRY.forEach((item, organ) -> {
+        OrganBuilder.getRegistry().forEach((item, organ) -> {
             event.registerItem(CapabilityManager.ORGAN, (itemStack, context) -> organ, item);
         });
     }
