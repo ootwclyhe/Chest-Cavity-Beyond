@@ -2,6 +2,7 @@ package net.zhaiji.chestcavitybeyond.util;
 
 import com.google.common.collect.Multimap;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -66,7 +67,7 @@ public class TooltipUtil {
     public static void simpleSkillTooltip(ChestCavityData data, ItemStack stack, TooltipsKeyContext keyContext, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         List<Component> skillTooltips = new ArrayList<>();
         skillTooltips.add(Component.empty());
-        skillTooltips.add(Component.translatable("organ." + ChestCavityBeyond.MOD_ID + "." + stack.getItem().getDescriptionId() + ".skill"));
+        skillTooltips.add(Component.translatable("organ." + ChestCavityBeyond.MOD_ID + "." + BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath() + ".skill"));
         simpleTooltipAdd(tooltipComponents, skillTooltips);
     }
 

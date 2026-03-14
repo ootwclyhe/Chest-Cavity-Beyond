@@ -33,11 +33,6 @@ public class ChestOpenerItem extends Item {
     }
 
     @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return stack.getMaxStackSize() == 1;
-    }
-
-    @Override
     public int getEnchantmentValue(ItemStack stack) {
         return 14;
     }
@@ -49,9 +44,9 @@ public class ChestOpenerItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
         ItemStack stack = player.getItemInHand(usedHand);
         HitResult hitResult = ProjectileUtil.getHitResultOnViewVector(
-                player,
-                entity -> entity != player,
-                EnchantmentUtil.calculateOpenDistance(level, stack, player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE).getValue())
+            player,
+            entity -> entity != player,
+            EnchantmentUtil.calculateOpenDistance(level, stack, player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE).getValue())
         );
         DamageSource source = DamageSourceManager.openChest(level, player);
         float damage = EnchantmentUtil.calculateOpenDamage(level, stack, 4);
@@ -59,7 +54,7 @@ public class ChestOpenerItem extends Item {
         if (hitResult instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof LivingEntity target) {
             // 检查胸腔类型是否可开胸
             ChestCavityType cavityType = ChestCavityTypeManager.getType(target);
-            if (cavityType.isUnopenable()) {
+            if (!cavityType.canOpen(player, target)) {
                 if (player instanceof ServerPlayer serverPlayer) {
                     PacketDistributor.sendToPlayer(serverPlayer, new UnopenableChestCavityMessagePacket(target.getId()));
                 }
@@ -68,7 +63,12 @@ public class ChestOpenerItem extends Item {
             boolean isOwner = target instanceof OwnableEntity ownable && ownable.getOwner() == player;
             int safeSurgeryLevel = EnchantmentUtil.getEnchantmentLevel(level, stack, InitEnchantment.SAFE_SURGERY);
             boolean canOpenOwnable = isOwner && (safeSurgeryLevel == 0 || (safeSurgeryLevel == 1 && player.isShiftKeyDown()));
-            boolean canOpenCavity = player.isCreative() || canOpenOwnable || EnchantmentUtil.canOpenChestCavity(level, stack, target.getMaxHealth(), target.getHealth());
+            boolean canOpenCavity = player.isCreative() || canOpenOwnable || EnchantmentUtil.canOpenChestCavity(
+                level,
+                stack,
+                target.getMaxHealth(),
+                target.getHealth()
+            );
             hasDoor = ChestCavityUtil.getData(target).hasOrgan(ItemTags.DOORS);
             boolean hasChestPlate = !target.getItemBySlot(EquipmentSlot.CHEST).isEmpty();
             if (!canOpenCavity && !hasDoor || hasChestPlate) {
@@ -82,24 +82,25 @@ public class ChestOpenerItem extends Item {
                     }
                 }
             } else {
-                ChestCavityUtil.openChestCavity(player, target);
-                if (!hasDoor) {
-                    target.hurt(source, damage);
-                }
+                if (!hasDoor) target.hurt(source, damage);
+                if (target.isAlive()) ChestCavityUtil.openChestCavity(player, target);
             }
         } else {
             int safeSurgeryLevel = EnchantmentUtil.getEnchantmentLevel(level, stack, InitEnchantment.SAFE_SURGERY);
             if (safeSurgeryLevel == 0 || safeSurgeryLevel == 1 && player.isShiftKeyDown()) {
-                ChestCavityUtil.openChestCavity(player);
                 hasDoor = ChestCavityUtil.getData(player).hasOrgan(ItemTags.DOORS);
-                if (!hasDoor) {
-                    player.hurt(source, damage);
-                }
+                if (!hasDoor) player.hurt(source, damage);
+                if (player.isAlive()) ChestCavityUtil.openChestCavity(player);
             }
         }
         if (level.isClientSide() && hasDoor) {
             player.playNotifySound(SoundEvents.CHEST_OPEN, player.getSoundSource(), 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+    }
+
+    @Override
+    public boolean isEnchantable(ItemStack stack) {
+        return stack.getMaxStackSize() == 1;
     }
 }

@@ -1,34 +1,33 @@
 package net.zhaiji.chestcavitybeyond.builder;
 
-import com.google.common.collect.Multimap;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
+import net.zhaiji.chestcavitybeyond.api.AttributeEntry;
 import net.zhaiji.chestcavitybeyond.api.ChestCavitySlotContext;
 import net.zhaiji.chestcavitybeyond.api.capability.IOrgan;
 import net.zhaiji.chestcavitybeyond.api.capability.Organ;
 import net.zhaiji.chestcavitybeyond.api.function.AttackConsumer;
 import net.zhaiji.chestcavitybeyond.api.function.HurtConsumer;
 import net.zhaiji.chestcavitybeyond.api.function.IncomingDamageConsumer;
+import net.zhaiji.chestcavitybeyond.api.function.OrganModifierConsumer;
 import net.zhaiji.chestcavitybeyond.api.function.OrganTooltipConsumer;
-import net.zhaiji.chestcavitybeyond.util.TooltipUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
  * 器官工厂类
  */
 public class OrganBuilder {
-    public static final Map<Item, Organ> ORGAN_REGISTRY = new HashMap<>();
-
     public static final IOrgan EMPTY_ORGAN = new IOrgan() {
     };
-    private static final BiConsumer<ResourceLocation, Multimap<Holder<Attribute>, AttributeModifier>> EMPTY_MODIFIER = (id, modifiers) -> {
+    private static final Map<Item, Organ> ORGAN_REGISTRY = new HashMap<>();
+    private static final OrganModifierConsumer EMPTY_MODIFIER = (context, modifiers) -> {
     };
     private static final OrganTooltipConsumer EMPTY_TOOLTIP = (data, stack, keyContext, context, tooltipComponents, tooltipFlag) -> {
     };
@@ -44,6 +43,16 @@ public class OrganBuilder {
     };
     private static final Consumer<ChestCavitySlotContext> EMPTY_CHEST_CAVITY_CLOSE = context -> {
     };
+
+    /**
+     * 获取器官注册表
+     *
+     * @return 器官注册表
+     */
+    public static Map<Item, Organ> getRegistry() {
+        return ORGAN_REGISTRY;
+    }
+
     /**
      * 新建构建器
      *
@@ -59,8 +68,9 @@ public class OrganBuilder {
 
     public static class Builder {
         private final Item.Properties properties = new Item.Properties().stacksTo(1);
+        private final List<AttributeEntry> attributeEntries = new ArrayList<>();
         private Item item;
-        private BiConsumer<ResourceLocation, Multimap<Holder<Attribute>, AttributeModifier>> organModifierConsumer = EMPTY_MODIFIER;
+        private OrganModifierConsumer organModifierConsumer = EMPTY_MODIFIER;
         private OrganTooltipConsumer descriptionTooltipConsumer = EMPTY_TOOLTIP;
         private OrganTooltipConsumer attributeTooltipConsumer = null;
         private OrganTooltipConsumer skillTooltipConsumer = EMPTY_TOOLTIP;
@@ -118,9 +128,55 @@ public class OrganBuilder {
         /**
          * 设置器官提供的属性修饰符
          */
-        public Builder modifier(BiConsumer<ResourceLocation, Multimap<Holder<Attribute>, AttributeModifier>> organModifierConsumer) {
+        public Builder modifier(OrganModifierConsumer organModifierConsumer) {
             this.organModifierConsumer = organModifierConsumer;
             return this;
+        }
+
+        /**
+         * 添加属性修饰符
+         *
+         * @param attribute 属性
+         * @param value     值
+         * @param operation 操作类型
+         * @return 构建器
+         */
+        public Builder addAttribute(Holder<Attribute> attribute, double value, AttributeModifier.Operation operation) {
+            attributeEntries.add(new AttributeEntry(attribute, value, operation));
+            return this;
+        }
+
+        /**
+         * 添加基础值加算属性修饰符
+         *
+         * @param attribute 属性
+         * @param value     值
+         * @return 构建器
+         */
+        public Builder addValueAttribute(Holder<Attribute> attribute, double value) {
+            return addAttribute(attribute, value, AttributeModifier.Operation.ADD_VALUE);
+        }
+
+        /**
+         * 添加基础值乘算属性修饰符
+         *
+         * @param attribute 属性
+         * @param value     值
+         * @return 构建器
+         */
+        public Builder baseMultipliedAttribute(Holder<Attribute> attribute, double value) {
+            return addAttribute(attribute, value, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        }
+
+        /**
+         * 添加最终乘算属性修饰符
+         *
+         * @param attribute 属性
+         * @param value     值
+         * @return 构建器
+         */
+        public Builder totalMultipliedAttribute(Holder<Attribute> attribute, double value) {
+            return addAttribute(attribute, value, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         }
 
         /**
@@ -212,24 +268,25 @@ public class OrganBuilder {
                 item = new Item(properties);
             }
             ORGAN_REGISTRY.put(
-                    item,
-                    new Organ(
-                            organModifierConsumer,
-                            descriptionTooltipConsumer,
-                            attributeTooltipConsumer,
-                            skillTooltipConsumer,
-                            organTickConsumer,
-                            organAddedConsumer,
-                            organRemovedConsumer,
-                            hasSkill,
-                            organSkillConsumer,
-                            cooldownTicks,
-                            attackConsumer,
-                            hurtConsumer,
-                            incomingDamageConsumer,
-                            chestCavityOpenConsumer,
-                            chestCavityCloseConsumer
-                    )
+                item,
+                new Organ(
+                    attributeEntries,
+                    organModifierConsumer,
+                    descriptionTooltipConsumer,
+                    attributeTooltipConsumer,
+                    skillTooltipConsumer,
+                    organTickConsumer,
+                    organAddedConsumer,
+                    organRemovedConsumer,
+                    hasSkill,
+                    organSkillConsumer,
+                    cooldownTicks,
+                    attackConsumer,
+                    hurtConsumer,
+                    incomingDamageConsumer,
+                    chestCavityOpenConsumer,
+                    chestCavityCloseConsumer
+                )
             );
             return item;
         }

@@ -2,6 +2,30 @@
 
 本文档记录了 Chest Cavity Beyond 所有版本的更改。
 
+## 1.1.1_fix
+
+- 修复了默认不可开胸的bug（原 `unopenable` 默认返回 `true` 导致所有实体默认不可开胸）
+- API优化：`ChestCavityType` 的开胸判断方法从 `unopenable/isUnopenable/setUnopenable` 重命名为 `canOpen/canOpen/setCanOpen`，逻辑取反，命名更直观
+
+## 1.1.1
+
+- 改进了胸腔类型的不可开胸判断机制，现在支持根据玩家和实体动态判断是否可开胸
+- 修复了无限持续时间药效可以被修改的问题
+- 新增类型安全的器官属性修饰符 API（`addValueAttribute`、`baseMultipliedAttribute`、`totalMultipliedAttribute`）
+- 重构了器官定义系统，简化了 `OrganBuilder` 使用方式
+- 新增 `AttributeEntry` 和 `OrganModifierConsumer` 接口
+- `ChestCavityData` 新增 `getOrganCount` 方法，支持多种方式统计器官数量
+- `ChestCavityUtil` 新增 `isOrgan` 方法，用于检测物品是否为器官
+
+## 1.1.0
+
+- 完善了可序列化任务系统，新增 `ChestCavityData` 参数，反序列化时可以访问胸腔数据上下文
+
+## 1.0.9
+
+- 创造模式标签页新增附魔书
+- 新增可序列化任务系统（`ISerializableTask`、`TaskManager`）
+
 ## 1.0.8
 
 - 新增了 `OrganChangeEvent` 事件，当胸腔中的器官被添加、移除或替换时触发

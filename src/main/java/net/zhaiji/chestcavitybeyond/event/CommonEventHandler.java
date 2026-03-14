@@ -15,9 +15,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -50,7 +50,7 @@ public class CommonEventHandler {
      * @param event 注册capability事件
      */
     public static void handlerRegisterCapabilitiesEvent(RegisterCapabilitiesEvent event) {
-        OrganBuilder.ORGAN_REGISTRY.forEach((item, organ) -> {
+        OrganBuilder.getRegistry().forEach((item, organ) -> {
             event.registerItem(CapabilityManager.ORGAN, (itemStack, context) -> organ, item);
         });
     }
@@ -185,7 +185,7 @@ public class CommonEventHandler {
         // 盔甲架
         ChestCavityTypeManager.registerEntity(EntityType.ARMOR_STAND, ChestCavityTypeManager.ARMOR_STAND);
 
-        NeoForge.EVENT_BUS.post(new RegisterChestCavityEvent());
+        ModLoader.postEvent(new RegisterChestCavityEvent());
     }
 
     /**

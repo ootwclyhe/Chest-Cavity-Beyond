@@ -4,6 +4,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -20,9 +22,11 @@ import net.zhaiji.chestcavitybeyond.ChestCavityBeyondConfig;
 import net.zhaiji.chestcavitybeyond.api.AttributeBonus;
 import net.zhaiji.chestcavitybeyond.api.ChestCavityType;
 import net.zhaiji.chestcavitybeyond.api.task.IChestCavityTask;
+import net.zhaiji.chestcavitybeyond.api.task.ISerializableTask;
 import net.zhaiji.chestcavitybeyond.client.screen.OrganSkillScreen;
 import net.zhaiji.chestcavitybeyond.manager.ChestCavityTypeManager;
 import net.zhaiji.chestcavitybeyond.manager.DamageSourceManager;
+import net.zhaiji.chestcavitybeyond.manager.TaskManager;
 import net.zhaiji.chestcavitybeyond.network.client.packet.SyncChestCavityDataPacket;
 import net.zhaiji.chestcavitybeyond.register.InitAttribute;
 import net.zhaiji.chestcavitybeyond.util.ChestCavityUtil;
@@ -147,7 +151,7 @@ public class ChestCavityData extends ItemStackHandler {
 
     public boolean hasOrgan(ItemStack stack) {
         for (ItemStack organ : stacks) {
-            if (!organ.isEmpty() && ItemStack.isSameItemSameComponents(organ, stack)) {
+            if (ItemStack.isSameItemSameComponents(organ, stack)) {
                 return true;
             }
         }
@@ -156,7 +160,7 @@ public class ChestCavityData extends ItemStackHandler {
 
     public boolean hasOrgan(TagKey<Item> tag) {
         for (ItemStack organ : stacks) {
-            if (!organ.isEmpty() && organ.is(tag)) {
+            if (organ.is(tag)) {
                 return true;
             }
         }
@@ -170,6 +174,49 @@ public class ChestCavityData extends ItemStackHandler {
             }
         }
         return false;
+    }
+
+    /**
+     * 获得同类器官在胸腔内的数量
+     */
+    public int getOrganCount(Item item) {
+        int count = 0;
+        for (ItemStack organ : stacks) {
+            if (organ.is(item)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int getOrganCount(ItemStack stack) {
+        int count = 0;
+        for (ItemStack organ : stacks) {
+            if (ItemStack.isSameItemSameComponents(organ, stack)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int getOrganCount(TagKey<Item> tag) {
+        int count = 0;
+        for (ItemStack organ : stacks) {
+            if (organ.is(tag)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int getOrganCount(Predicate<ItemStack> predicate) {
+        int count = 0;
+        for (ItemStack organ : stacks) {
+            if (predicate.test(organ)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -341,6 +388,17 @@ public class ChestCavityData extends ItemStackHandler {
         CompoundTag compoundTag = super.serializeNBT(provider);
         compoundTag.putInt("selectedSlot", selectedSlot);
         compoundTag.putBoolean("needBreath", needBreath);
+        // 序列化可序列化的tasks
+        ListTag tasksList = new ListTag();
+        for (IChestCavityTask task : tasks) {
+            if (task instanceof ISerializableTask serializableTask) {
+                CompoundTag taskTag = new CompoundTag();
+                taskTag.putString("type", serializableTask.getType().toString());
+                taskTag.put("data", serializableTask.serializeNBT(provider));
+                tasksList.add(taskTag);
+            }
+        }
+        compoundTag.put("tasks", tasksList);
         return compoundTag;
     }
 
@@ -349,5 +407,18 @@ public class ChestCavityData extends ItemStackHandler {
         super.deserializeNBT(provider, nbt);
         selectedSlot = nbt.getInt("selectedSlot");
         needBreath = nbt.getBoolean("needBreath");
+
+        // 反序列化tasks
+        tasks.clear();
+        ListTag tasksList = nbt.getList("tasks", 10);
+        for (int i = 0; i < tasksList.size(); i++) {
+            CompoundTag taskTag = tasksList.getCompound(i);
+            ResourceLocation type = ResourceLocation.parse(taskTag.getString("type"));
+            CompoundTag data = taskTag.getCompound("data");
+            IChestCavityTask task = TaskManager.deserializeTask(this, type, provider, data);
+            if (task != null) {
+                tasks.add(task);
+            }
+        }
     }
 }

@@ -19,6 +19,9 @@ public abstract class MobEffectInstanceMixin implements IMobEffectInstance {
     @Shadow
     public abstract Holder<MobEffect> getEffect();
 
+    @Shadow
+    public abstract boolean isInfiniteDuration();
+
     @Unique
     @Override
     public boolean isHarmful() {
@@ -28,6 +31,7 @@ public abstract class MobEffectInstanceMixin implements IMobEffectInstance {
     @Unique
     @Override
     public void setDuration(int duration) {
+        if (isInfiniteDuration()) return;
         this.duration = duration;
     }
 }

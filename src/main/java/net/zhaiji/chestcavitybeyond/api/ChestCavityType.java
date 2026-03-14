@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,7 +19,13 @@ import net.zhaiji.chestcavitybeyond.ChestCavityBeyond;
 import net.zhaiji.chestcavitybeyond.util.ChestCavityUtil;
 import net.zhaiji.chestcavitybeyond.util.OrganAttributeUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 public class ChestCavityType {
     private final NonNullList<Item> organs = NonNullList.withSize(27, Items.AIR);
@@ -33,7 +40,7 @@ public class ChestCavityType {
 
     private boolean needBreath = true;
 
-    private boolean unopenable = false;
+    private BiFunction<Player, LivingEntity, Boolean> canOpen = (player, entity) -> true;
 
     private String unopenableMessage;
 
@@ -43,7 +50,13 @@ public class ChestCavityType {
      * @param entityType 实体类型
      * @param modifiers  修饰符集合
      */
-    private static void calculateValue(EntityType<? extends LivingEntity> entityType, Holder<Attribute> attribute, Collection<AttributeModifier> modifiers, Map<Holder<Attribute>, Double> defaultMap, Map<Holder<Attribute>, AttributeModifier> modifierMap) {
+    private static void calculateValue(
+        EntityType<? extends LivingEntity> entityType,
+        Holder<Attribute> attribute,
+        Collection<AttributeModifier> modifiers,
+        Map<Holder<Attribute>, Double> defaultMap,
+        Map<Holder<Attribute>, AttributeModifier> modifierMap
+    ) {
         double value = 0;
         double baseValue = 0;
         boolean hasAttribute = false;
@@ -97,7 +110,7 @@ public class ChestCavityType {
         attributeBonuses.putAll(copyTarget.attributeBonuses);
         typeDefaultBonuses.addAll(copyTarget.typeDefaultBonuses);
         this.needBreath = copyTarget.needBreath;
-        this.unopenable = copyTarget.unopenable;
+        this.canOpen = copyTarget.canOpen;
         this.unopenableMessage = copyTarget.unopenableMessage;
         return this;
     }
@@ -186,9 +199,14 @@ public class ChestCavityType {
      * @param operation  应用方式
      * @return 胸腔类型
      */
-    public ChestCavityType addAttributeBonus(Item organ, Holder<Attribute> attribute, double bonusValue, AttributeModifier.Operation operation) {
+    public ChestCavityType addAttributeBonus(
+        Item organ,
+        Holder<Attribute> attribute,
+        double bonusValue,
+        AttributeModifier.Operation operation
+    ) {
         attributeBonuses.computeIfAbsent(organ, item -> new ArrayList<>())
-                .add(new AttributeBonus(attribute, bonusValue, operation));
+            .add(new AttributeBonus(attribute, bonusValue, operation));
         return this;
     }
 
@@ -201,7 +219,7 @@ public class ChestCavityType {
      */
     public ChestCavityType addValueBonuses(Item item, Map<Holder<Attribute>, Double> attributes) {
         attributes.forEach((attribute, value) ->
-                addAttributeBonus(item, attribute, value, AttributeModifier.Operation.ADD_VALUE)
+            addAttributeBonus(item, attribute, value, AttributeModifier.Operation.ADD_VALUE)
         );
         return this;
     }
@@ -228,7 +246,7 @@ public class ChestCavityType {
      */
     public ChestCavityType addTypeValueBonuses(Map<Holder<Attribute>, Double> attributes) {
         attributes.forEach((attribute, value) ->
-                addTypeDefaultBonus(attribute, value, AttributeModifier.Operation.ADD_VALUE)
+            addTypeDefaultBonus(attribute, value, AttributeModifier.Operation.ADD_VALUE)
         );
         return this;
     }
@@ -261,8 +279,8 @@ public class ChestCavityType {
             ResourceLocation slotId = ChestCavityUtil.getSlotId(i);
             // 器官默认属性
             modifierMultimap.putAll(
-                    ChestCavityUtil.getOrganCap(organ)
-                            .getAttributeModifiers(new ChestCavitySlotContext(null, null, slotId, i, organ))
+                ChestCavityUtil.getOrganCap(organ)
+                    .getAttributeModifiers(new ChestCavitySlotContext(null, null, slotId, i, organ))
             );
             // 器官补偿属性
             if (attributeBonuses.containsKey(organItem)) {
@@ -307,26 +325,25 @@ public class ChestCavityType {
     }
 
     /**
-     * 获取是否不可开胸
+     * 获取能否开胸
      */
-    public boolean isUnopenable() {
-        return unopenable;
+    public boolean canOpen(Player player, LivingEntity entity) {
+        return canOpen.apply(player, entity);
     }
 
     /**
-     * 设置是否不可开胸
+     * 设置能否开胸
      */
-    public ChestCavityType setUnopenable(boolean unopenable) {
-        this.unopenable = unopenable;
+    public ChestCavityType setCanOpen(BiFunction<Player, LivingEntity, Boolean> unopenable) {
+        this.canOpen = unopenable;
         return this;
     }
 
     /**
-     * 设置不可开胸时的消息提示（语言键）
-     * @param messageKey 翻译键，如 "message.chestcavitybeyond.boss_undying"
+     * 设置能否开胸
      */
-    public ChestCavityType setUnopenableMessage(String messageKey) {
-        this.unopenableMessage = messageKey;
+    public ChestCavityType setCanOpen(boolean canOpen) {
+        this.canOpen = (player, entity) -> canOpen;
         return this;
     }
 
@@ -335,5 +352,15 @@ public class ChestCavityType {
      */
     public String getUnopenableMessage() {
         return unopenableMessage;
+    }
+
+    /**
+     * 设置不可开胸时的消息提示（语言键）
+     *
+     * @param messageKey 翻译键，如 "message.chestcavitybeyond.boss_undying"
+     */
+    public ChestCavityType setUnopenableMessage(String messageKey) {
+        this.unopenableMessage = messageKey;
+        return this;
     }
 }

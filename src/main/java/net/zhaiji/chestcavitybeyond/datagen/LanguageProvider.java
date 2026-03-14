@@ -1,6 +1,7 @@
 package net.zhaiji.chestcavitybeyond.datagen;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageType;
@@ -655,7 +656,7 @@ public class LanguageProvider extends net.neoforged.neoforge.common.data.Languag
     }
 
     private void addOrganSkill(Supplier<Item> item, String value) {
-        add("organ." + ChestCavityBeyond.MOD_ID + "." + item.get().getDescriptionId() + ".skill", value);
+        add("organ." + ChestCavityBeyond.MOD_ID + "." + BuiltInRegistries.ITEM.getKey(item.get()).getPath() + ".skill", value);
     }
 
     private void addEnchantment(ResourceKey<Enchantment> resourceKey, String value, String desc) {
