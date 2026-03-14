@@ -11,6 +11,16 @@ public class BasicHeartOrgan implements ILegacyOrgan {
     }
 
     @Override
+    public boolean hasSkill() {
+        return true;
+    }
+
+    @Override
+    public int getSkillCooldownTicks() {
+        return 60;
+    }
+
+    @Override
     public void onTick(EntityLivingBase entity, ItemStack stack, int slotIndex) {
         if (entity.ticksExisted % 100 == 0 && entity.getHealth() < entity.getMaxHealth()) {
             entity.heal(0.5F);

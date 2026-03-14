@@ -8,6 +8,8 @@ import net.zhaiji.chestcavitybeyond.legacy.chestcavity.ChestCavityData;
 import net.zhaiji.chestcavitybeyond.legacy.chestcavity.ChestCavityProperties;
 
 public class LegacySkillUtil {
+    private static final String NBT_KEY_SKILL_COOLDOWN_PREFIX = "cbb_skill_cd_";
+
     private LegacySkillUtil() {
     }
 
@@ -32,8 +34,27 @@ public class LegacySkillUtil {
         }
 
         ILegacyOrgan organ = LegacyOrganRegistry.get(stack.getItem());
-        if (organ != null) {
-            organ.onUse(player, stack, useSlot);
+        if (organ == null || !organ.hasSkill()) {
+            return;
         }
+
+        int cooldownTicks = organ.getSkillCooldownTicks();
+        if (cooldownTicks > 0) {
+            long now = player.worldObj.getTotalWorldTime();
+            String key = getSkillCooldownKey(organ);
+            long lastUse = player.getEntityData().getLong(key);
+            long remain = cooldownTicks - (now - lastUse);
+            if (remain > 0) {
+                LegacyMessageUtil.sendUnopenableMessage(player, "技能冷却中，还需 " + remain + " tick");
+                return;
+            }
+            player.getEntityData().setLong(key, now);
+        }
+
+        organ.onUse(player, stack, useSlot);
+    }
+
+    private static String getSkillCooldownKey(ILegacyOrgan organ) {
+        return NBT_KEY_SKILL_COOLDOWN_PREFIX + organ.getId();
     }
 }

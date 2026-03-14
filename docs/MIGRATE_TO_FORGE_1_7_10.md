@@ -63,21 +63,23 @@
 - `SlotOrganLegacy`：胸腔槽位仅允许已注册器官物品
 - `BasicHeartOrgan`：示例心脏器官（周期性治疗）
 - `BasicLungOrgan`：示例肺器官（周期性提供水下呼吸）
-- `LegacySkillUtil`：器官主动技能触发入口（配合服务端技能包，支持 selectedSlot 兜底触发）
+- `LegacySkillUtil`：器官主动技能触发入口（配合服务端技能包，支持 selectedSlot 兜底触发 + 按器官ID的技能冷却）
 - `LegacyClientState`：客户端选中槽位状态缓存
 - `LegacyRenderTaskState`：客户端渲染任务状态缓存
+- `LegacyClientTickHandler`：客户端 tick 驱动渲染任务倒计时
+- `LegacyKeyBindings` + `LegacyClientInputHandler`：客户端仅在 `hasSkill()` 器官上轮换技能槽位并发送旧版技能/槽位同步包
 
 ### 8) 手术与掉落链路（基础完成）
 
 - `ItemChestOpenerLegacy`：对生物潜行右键可执行基础器官提取（含耐久消耗）
-- `LegacySurgeryHelper`：实现成功率判定、条件校验、玩家/目标双冷却、附魔加成、失败惩罚、器官损坏概率与稀有器官逻辑
+- `LegacySurgeryHelper`：实现成功率判定、条件校验、玩家/目标双冷却、附魔加成、失败惩罚、器官损坏概率与稀有器官逻辑（并移除空胸腔凭空产出，优先提取 selectedSlot）
 - `LegacyOrganDropHandler`：生物死亡时掉落胸腔内器官
 - `ModRecipes`：补齐开胸器基础合成配方
 
 ## 未完成清单（继续执行）
 
 1. 器官系统：把现有大批器官行为（属性/技能触发）逐项回写到 legacy 运行时。
-2. 技能与任务网络包：按旧版 `IMessage` 逐包迁移。
+2. 技能与任务网络包：已补齐基础技能触发/选槽输入链路，继续按旧版 `IMessage` 逐包迁移剩余能力。
 3. 手术细则：继续补齐更细的附魔映射与高级器官专属规则（基础损坏概率/稀有器官逻辑已落地）。
 4. 客户端渲染任务：替换现代渲染入口与特效。
 5. 联机压力测试：多人同步一致性与边界行为。

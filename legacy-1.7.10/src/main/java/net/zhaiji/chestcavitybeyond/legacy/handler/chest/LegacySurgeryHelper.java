@@ -56,17 +56,24 @@ public class LegacySurgeryHelper {
             return false;
         }
 
+        ChestCavityData data = props.getData();
+        if (!hasAnyOrgan(data)) {
+            LegacyMessageUtil.sendUnopenableMessage(player, "目标胸腔没有可提取器官");
+            return false;
+        }
+
         setCooldown(player, target);
 
         int fortuneLevel = openerStack == null ? 0 : EnchantmentHelper.getEnchantmentLevel(Enchantment.fortune.effectId, openerStack);
         float successChance = getSurgerySuccessChance(player, openerStack);
         boolean success = target.worldObj.rand.nextFloat() < successChance;
-        ItemStack extracted = null;
+        ItemStack extracted;
 
         if (success) {
-            extracted = extractFromCavity(props.getData());
+            extracted = extractFromCavity(data);
             if (extracted == null) {
-                extracted = generateFallbackOrgan(target);
+                LegacyMessageUtil.sendUnopenableMessage(player, "手术失败：未找到可提取器官");
+                return false;
             }
 
             extracted = maybeDamageExtractedOrgan(target, extracted, fortuneLevel);
@@ -108,6 +115,16 @@ public class LegacySurgeryHelper {
     }
 
     private static ItemStack extractFromCavity(ChestCavityData data) {
+        int selected = data.selectedSlot;
+        if (selected >= 0 && selected < ChestCavityData.SLOT_COUNT) {
+            ItemStack selectedStack = data.getStackInSlot(selected);
+            if (selectedStack != null) {
+                ItemStack extracted = selectedStack.copy();
+                data.setStackInSlot(selected, null);
+                return extracted;
+            }
+        }
+
         for (int i = 0; i < ChestCavityData.SLOT_COUNT; i++) {
             ItemStack organ = data.getStackInSlot(i);
             if (organ != null) {
@@ -117,6 +134,15 @@ public class LegacySurgeryHelper {
             }
         }
         return null;
+    }
+
+    private static boolean hasAnyOrgan(ChestCavityData data) {
+        for (int i = 0; i < ChestCavityData.SLOT_COUNT; i++) {
+            if (data.getStackInSlot(i) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static float getSurgerySuccessChance(EntityPlayer player, ItemStack openerStack) {
@@ -201,13 +227,4 @@ public class LegacySurgeryHelper {
         }
     }
 
-    private static ItemStack generateFallbackOrgan(EntityLivingBase target) {
-        if (target.isInWater()) {
-            return new ItemStack(ModItems.organBasicLung);
-        }
-        if (target instanceof IMob) {
-            return new ItemStack(ModItems.organBasicHeart);
-        }
-        return new ItemStack(target.worldObj.rand.nextBoolean() ? ModItems.organBasicHeart : ModItems.organBasicLung);
-    }
 }

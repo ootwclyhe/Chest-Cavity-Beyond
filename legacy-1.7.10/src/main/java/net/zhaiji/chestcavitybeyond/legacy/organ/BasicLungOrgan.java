@@ -13,6 +13,16 @@ public class BasicLungOrgan implements ILegacyOrgan {
     }
 
     @Override
+    public boolean hasSkill() {
+        return true;
+    }
+
+    @Override
+    public int getSkillCooldownTicks() {
+        return 40;
+    }
+
+    @Override
     public void onTick(EntityLivingBase entity, ItemStack stack, int slotIndex) {
         if (entity.ticksExisted % 40 == 0) {
             entity.addPotionEffect(new PotionEffect(Potion.waterBreathing.id, 60, 0));
