@@ -5,6 +5,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -12,7 +13,11 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.zhaiji.chestcavitybeyond.ChestCavityBeyond;
+import net.zhaiji.chestcavitybeyond.api.event.OrganChangeEvent;
 import net.zhaiji.chestcavitybeyond.api.ChestCavitySlotContext;
 import net.zhaiji.chestcavitybeyond.api.capability.IOrgan;
 import net.zhaiji.chestcavitybeyond.attachment.ChestCavityData;
@@ -91,6 +96,8 @@ public class ChestCavityUtil {
         OrganAttributeUtil.updateOrganAttributeModifier(data, entity, index, oldStack, newStack);
         ChestCavityUtil.organRemoved(data, entity, index, oldStack);
         ChestCavityUtil.organAdded(data, entity, index, newStack);
+        // 发布器官更换事件
+        NeoForge.EVENT_BUS.post(new OrganChangeEvent(data, entity, index, oldStack, newStack));
     }
 
     /**
@@ -123,6 +130,66 @@ public class ChestCavityUtil {
     public static void organSkill(ChestCavityData data, LivingEntity entity, int index, ItemStack stack) {
         if (stack.isEmpty()) return;
         getOrganCap(stack).organSkill(createContext(data, entity, index, stack));
+    }
+
+    /**
+     * 胸腔打开时遍历所有器官
+     */
+    public static void chestCavityOpen(ChestCavityData data, LivingEntity entity) {
+        for (int i = 0; i < data.getSlots(); i++) {
+            ItemStack stack = data.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                getOrganCap(stack).chestCavityOpen(createContext(data, entity, i, stack));
+            }
+        }
+    }
+
+    /**
+     * 胸腔关闭时遍历所有器官
+     */
+    public static void chestCavityClose(ChestCavityData data, LivingEntity entity) {
+        for (int i = 0; i < data.getSlots(); i++) {
+            ItemStack stack = data.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                getOrganCap(stack).chestCavityClose(createContext(data, entity, i, stack));
+            }
+        }
+    }
+
+    /**
+     * 遍历所有器官触发受到伤害前回调
+     */
+    public static void incomingDamage(ChestCavityData data, LivingEntity entity, LivingIncomingDamageEvent event) {
+        for (int i = 0; i < data.getSlots(); i++) {
+            ItemStack stack = data.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                getOrganCap(stack).incomingDamage(createContext(data, entity, i, stack), event);
+            }
+        }
+    }
+
+    /**
+     * 遍历所有器官触发攻击回调
+     */
+    public static void attack(ChestCavityData data, LivingEntity entity, LivingEntity target, DamageSource source, DamageContainer damageContainer) {
+        for (int i = 0; i < data.getSlots(); i++) {
+            ItemStack stack = data.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                getOrganCap(stack).attack(createContext(data, entity, i, stack), target, source, damageContainer);
+            }
+        }
+    }
+
+    /**
+     * 遍历所有器官触发受伤回调
+     */
+    public static void hurt(ChestCavityData data, LivingEntity entity, DamageSource source, DamageContainer damageContainer) {
+        for (int i = 0; i < data.getSlots(); i++) {
+            ItemStack stack = data.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                getOrganCap(stack).hurt(createContext(data, entity, i, stack), source, damageContainer);
+            }
+        }
     }
 
     /**
